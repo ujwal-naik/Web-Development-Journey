@@ -3,17 +3,15 @@
  * @return {Object}
  */
 Array.prototype.groupBy = function(fn) {
-    const result ={};
+    const grouped ={};
 
     for (const item of this){
         const key = fn (item);
-        if (!result[key]){
-            result[key]=[];
-        }
-        result[key].push(item);
+        grouped[key] ??=[];
+
+        grouped[key].push(item);
     }
-    return result;
-    
+    return grouped;
 };
 
 /**
