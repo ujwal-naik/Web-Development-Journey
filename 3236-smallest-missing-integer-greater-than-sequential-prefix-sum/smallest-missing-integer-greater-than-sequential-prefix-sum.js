@@ -4,6 +4,8 @@
  */
 var missingInteger = function(nums) {
     let sum = nums[0];
+    
+    // 1. Calculate sequential prefix sum
     for (let i = 1; i < nums.length; i++) {
         if (nums[i] === nums[i - 1] + 1) {
             sum += nums[i];
@@ -12,11 +14,8 @@ var missingInteger = function(nums) {
         }
     }
     
-    // 2. Put all numbers in a Set for O(1) lookup speed
-    const numSet = new Set(nums);
-    
-    // 3. Find the smallest integer >= sum that is missing from nums
-    while (numSet.has(sum)) {
+    // 2. Increment sum as long as it exists in nums
+    while (nums.includes(sum)) {
         sum++;
     }
     
