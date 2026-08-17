@@ -9,21 +9,25 @@ var stoneGameV = function(stoneValue) {
         prefix[i + 1] = prefix[i] + stoneValue[i];
     }
 
-    const memo = Array.from({ length: n }, () => new Int32Array(n).fill(-1));
+    // Flattened memo array for maximum V8 engine performance
+    const memo = new Int32Array(n * n).fill(-1);
 
     const getSum = (i, j) => prefix[j + 1] - prefix[i];
 
     const dp = (i, j) => {
         if (i >= j) return 0;
-        if (memo[i][j] !== -1) return memo[i][j];
+        const key = i * n + j;
+        if (memo[key] !== -1) return memo[key];
 
         let maxScore = 0;
+        const total = getSum(i, j);
 
         for (let k = i; k < j; k++) {
             const leftSum = getSum(i, k);
-            const rightSum = getSum(k + 1, j);
+            const rightSum = total - leftSum;
 
             if (leftSum < rightSum) {
+                // If leftSum + total/2 cannot beat current maxScore, can prune
                 maxScore = Math.max(maxScore, leftSum + dp(i, k));
             } else if (rightSum < leftSum) {
                 maxScore = Math.max(maxScore, rightSum + dp(k + 1, j));
@@ -35,7 +39,7 @@ var stoneGameV = function(stoneValue) {
             }
         }
 
-        return (memo[i][j] = maxScore);
+        return (memo[key] = maxScore);
     };
 
     return dp(0, n - 1);
