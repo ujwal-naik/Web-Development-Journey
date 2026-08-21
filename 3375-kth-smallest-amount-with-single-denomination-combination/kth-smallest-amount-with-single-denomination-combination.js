@@ -4,53 +4,62 @@
  * @return {number}
  */
 var findKthSmallest = function(coins, k) {
-    const gcd = (a, b) => (b === 0n ? a : gcd(b, a % b));
-    const lcm = (a, b) => (a / gcd(a, b)) * b;
+    // 1. Sort and prune coins that are multiples of smaller coins
+    coins.sort((a, b) => a - b);
+    const filtered = [];
+    for (const c of coins) {
+        if (!filtered.some(base => c % base === 0)) {
+            filtered.push(c);
+        }
+    }
 
-    const n = coins.length;
-    const bigCoins = coins.map(BigInt);
-    const bigK = BigInt(k);
+    const gcd = (a, b) => (b === 0 ? a : gcd(b, a % b));
+    const lcm = (a, b) => Math.floor(a / gcd(a, b)) * b;
 
-    // Precompute LCM and subset parity for all 2^n - 1 non-empty subsets
-    const subsets = [];
-    for (let mask = 1; mask < (1 << n); mask++) {
-        let currentLcm = 1n;
-        let bitsCount = 0;
+    const n = filtered.length;
+    const subsetCount = 1 << n;
+
+    // 2. Precompute LCM and sign using primitive numbers
+    const lcms = new Float64Array(subsetCount);
+    const signs = new Int8Array(subsetCount);
+
+    for (let mask = 1; mask < subsetCount; mask++) {
+        let curLcm = 1;
+        let bits = 0;
 
         for (let i = 0; i < n; i++) {
             if ((mask & (1 << i)) !== 0) {
-                currentLcm = lcm(currentLcm, bigCoins[i]);
-                bitsCount++;
+                curLcm = lcm(curLcm, filtered[i]);
+                bits++;
             }
         }
-        subsets.push({ lcm: currentLcm, sign: bitsCount % 2 === 1 ? 1n : -1n });
+        lcms[mask] = curLcm;
+        signs[mask] = (bits & 1) ? 1 : -1;
     }
 
-    // Inclusion-Exclusion to count valid amounts <= target
+    // Inclusion-Exclusion count
     const countMultiples = (target) => {
-        let count = 0n;
-        for (const { lcm, sign } of subsets) {
-            count += sign * (target / lcm);
+        let count = 0;
+        for (let mask = 1; mask < subsetCount; mask++) {
+            count += signs[mask] * Math.floor(target / lcms[mask]);
         }
         return count;
     };
 
-    // Binary search over the answer range [1, min(coins) * k]
-    const minCoin = BigInt(Math.min(...coins));
-    let low = 1n;
-    let high = minCoin * bigK;
+    // 3. Fast binary search using standard Numbers
+    let low = 1;
+    let high = filtered[0] * k;
     let ans = high;
 
     while (low <= high) {
-        const mid = low + (high - low) / 2n;
-
-        if (countMultiples(mid) >= bigK) {
+        const mid = Math.floor((low + high) / 2);
+        if (countMultiples(mid) >= k) {
             ans = mid;
-            high = mid - 1n;
+            high = mid - 1;
         } else {
-            low = mid + 1n;
+            low = mid + 1;
         }
     }
 
-    return Number(ans);
+    return ans;
 };
