@@ -3,27 +3,29 @@
  * @return {boolean}
  */
 var sumGame = function(num) {
-    const n = num.length;
-    let diff = 0; // left_sum - right_sum
-    let qDiff = 0; // left_? - right_?
+    let diff = 0;
+    let qDiff = 0;
+    let l = 0;
+    let r = num.length - 1;
 
-    for (let i = 0; i < n / 2; i++) {
-        if (num[i] === '?') {
+    while (l < r) {
+        const c1 = num.charCodeAt(l);
+        if (c1 === 63) { // '?' is ASCII 63
             qDiff++;
         } else {
-            diff += Number(num[i]);
+            diff += c1 - 48; // '0' is ASCII 48
         }
-    }
 
-    for (let i = n / 2; i < n; i++) {
-        if (num[i] === '?') {
+        const c2 = num.charCodeAt(r);
+        if (c2 === 63) {
             qDiff--;
         } else {
-            diff -= Number(num[i]);
+            diff -= c2 - 48;
         }
+
+        l++;
+        r--;
     }
 
-    // Bob wins if and only if diff + qDiff * 4.5 === 0
-    // Equivalently: 2 * diff + 9 * qDiff === 0
     return (2 * diff + 9 * qDiff) !== 0;
 };
