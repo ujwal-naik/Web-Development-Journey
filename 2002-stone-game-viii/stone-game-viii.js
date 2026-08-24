@@ -5,14 +5,14 @@
 var stoneGameVIII = function(stones) {
     const n = stones.length;
 
-    // In-place prefix sum
+    
     for (let i = 1; i < n; ++i) {
         stones[i] += stones[i - 1];
     }
 
     let maxDiff = stones[n - 1];
 
-    // Backward pass with inline branch instead of Math.max
+    
     for (let i = n - 2; i > 0; --i) {
         const takeScore = stones[i] - maxDiff;
         if (takeScore > maxDiff) {
